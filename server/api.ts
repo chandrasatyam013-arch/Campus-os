@@ -44,6 +44,14 @@ export interface AuthenticatedRequest extends Request {
   user?: User;
 }
 
+// Health endpoint root (Vercel Requirement)
+router.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: "campus-os-api"
+  });
+});
+
 // Authentication Middleware
 export const authenticateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
