@@ -18,7 +18,7 @@ const prisma = new PrismaClient();
 
 const router = Router();
 const groqProvider = createGroq({
-  apiKey: process.env.GROQ_API_KEY
+  apiKey: process.env.GROQ_API_KEY || 'missing_key'
 });
 
 // Import Rate Limiter
