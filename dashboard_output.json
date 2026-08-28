@@ -1,0 +1,69 @@
+{
+    "user":  {
+                 "id":  "58879020-69d6-47d2-b7fa-0e738e523790",
+                 "name":  "Test User",
+                 "email":  "test5@example.com",
+                 "createdAt":  "2026-08-28T05:11:16.086Z",
+                 "updatedAt":  "2026-08-28T05:11:16.086Z"
+             },
+    "overallAttendance":  {
+                              "overallPercentage":  100,
+                              "totalAttended":  0,
+                              "totalHeld":  0,
+                              "isAboveTarget":  true,
+                              "isAboveMinimum":  true,
+                              "subjects":  [
+
+                                           ]
+                          },
+    "overallAcademic":  {
+                            "estimatedSGPA":  0,
+                            "totalCredits":  0,
+                            "trendDescription":  "On Track",
+                            "overallTrend":  "IMPROVING",
+                            "subjects":  [
+
+                                         ]
+                        },
+    "pendingTasks":  {
+                         "pendingCount":  0,
+                         "urgentDueNext24Hours":  0,
+                         "dueThisWeekCount":  0
+                     },
+    "riskAnalysis":  {
+                         "riskLevel":  "SAFE",
+                         "inDangerCount":  0,
+                         "borderlineCount":  0,
+                         "riskScore":  20
+                     },
+    "whatShouldIDoToday":  [
+
+                           ],
+    "todaySchedule":  {
+                          "dayOfWeek":  "FRIDAY",
+                          "dateFormatted":  "Friday, Aug 28",
+                          "classes":  [
+
+                                      ]
+                      },
+    "weeklySummary":  {
+                          "attendanceChangePercent":  1.4,
+                          "attendanceDirection":  "UP",
+                          "assignmentsCompletedCount":  0,
+                          "assignmentsPendingCount":  0,
+                          "upcomingExamsCount":  0,
+                          "highlightMessage":  "Great momentum! Attendance is on an upward trajectory.",
+                          "detailedPoints":  [
+                                                 "Attendance improved by 1.4% over recent recorded classes.",
+                                                 "All subject performances are currently balanced above target standards.",
+                                                 "All assignments are submitted and up-to-date.",
+                                                 "No major examinations scheduled for the immediate 2-week window."
+                                             ]
+                      },
+    "subjects":  [
+
+                 ],
+    "recentNotifications":  [
+
+                            ]
+}

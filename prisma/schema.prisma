@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String             @id @default(uuid())
+  name          String
+  email         String             @unique
+  passwordHash  String             @map("password_hash")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  events        AcademicEvent[]
+  notifications AppNotification[]
+  assignments   Assignment[]
+  attendance    AttendanceRecord[]
+  marks         Mark[]
+  subjects      Subject[]
+  timetable     TimetableEntry[]
+  settings      UserSettings?
+  careerProfile           CareerProfile?
+  roadmaps                CareerRoadmap[]
+  dismissedRecommendations DismissedRecommendation[]
+
+  @@map("users")
+}
+
+model UserSettings {
+  userId                  String @id @map("user_id")
+  theme                   String @default("dark")
+  attendanceTarget        Int    @default(85) @map("attendance_target")
+  minimumAttendance       Int    @default(75) @map("minimum_attendance")
+  gradingSystem           String @default("10_POINT") @map("grading_system")
+  notificationPreferences Json   @map("notification_preferences")
+  user                    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model Subject {
+  id                String             @id @default(uuid())
+  userId            String             @map("user_id")
+  name              String
+  code              String
+  credits           Int
+  semester          Int                @default(1)
+  minimumAttendance Int                @default(75) @map("minimum_attendance")
+  targetAttendance  Int?               @map("target_attendance")
+  color             String             @default("#6366f1")
+  instructor        String?
+  room              String?
+  createdAt         DateTime           @default(now()) @map("created_at")
+  events            AcademicEvent[]
+  assignments       Assignment[]
+  attendanceRecords AttendanceRecord[]
+  marks             Mark[]
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timetable         TimetableEntry[]
+
+  @@map("subjects")
+}
+
+model AttendanceRecord {
+  id        String   @id @default(uuid())
+  subjectId String   @map("subject_id")
+  userId    String   @map("user_id")
+  date      String
+  status    String
+  classType String   @map("class_type")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("attendance_records")
+}
+
+model Mark {
+  id             String   @id @default(uuid())
+  subjectId      String   @map("subject_id")
+  userId         String   @map("user_id")
+  assessmentName String   @map("assessment_name")
+  assessmentType String   @map("assessment_type")
+  obtainedMarks  Float    @map("obtained_marks")
+  maximumMarks   Float    @map("maximum_marks")
+  date           String
+  weightage      Float?
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  subject        Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("marks")
+}
+
+model Assignment {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  subjectId      String   @map("subject_id")
+  title          String
+  description    String?
+  deadline       String
+  priority       String
+  status         String
+  estimatedHours Float?   @map("estimated_hours")
+  completedAt    String?  @map("completed_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  subject        Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assignments")
+}
+
+model TimetableEntry {
+  id         String  @id @default(uuid())
+  userId     String  @map("user_id")
+  subjectId  String  @map("subject_id")
+  day        String
+  startTime  String  @map("start_time")
+  endTime    String  @map("end_time")
+  room       String?
+  instructor String?
+  classType  String? @map("class_type")
+  subject    Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("timetable_entries")
+}
+
+model AcademicEvent {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  type        String
+  date        String
+  startTime   String?  @map("start_time")
+  endTime     String?  @map("end_time")
+  description String?
+  subjectId   String?  @map("subject_id")
+  location    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("academic_events")
+}
+
+model AppNotification {
+  id        String  @id @default(uuid())
+  userId    String  @map("user_id")
+  title     String
+  message   String
+  type      String
+  timestamp String
+  read      Boolean @default(false)
+  link      String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("app_notifications")
+}
+
+model CareerProfile {
+  id                String                 @id @default(uuid())
+  userId            String                 @unique @map("user_id")
+  targetCareer      String?                @map("target_career")
+  interests         String[]
+  preferredSubjects String[]               @map("preferred_subjects")
+  strengths         String[]
+  workPreferences   String[]               @map("work_preferences")
+  careerPreferences String[]               @map("career_preferences")
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+  user              User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendations   CareerRecommendation[]
+
+  @@map("career_profiles")
+}
+
+model CareerRecommendation {
+  id                 String        @id @default(uuid())
+  profileId          String        @map("profile_id")
+  career             String
+  compatibilityScore Float         @map("compatibility_score")
+  rank               Int
+  explanation        String
+  profile            CareerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("career_recommendations")
+}
+
+model CareerRoadmap {
+  id           String               @id @default(uuid())
+  userId       String               @map("user_id")
+  targetCareer String               @map("target_career")
+  currentLevel String               @map("current_level")
+  progress     Float                @default(0)
+  status       String               @default("ACTIVE") // ACTIVE, COMPLETED, ON_HOLD
+  targetDate   String?              @map("target_date")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phases       CareerRoadmapPhase[]
+
+  @@map("career_roadmaps")
+}
+
+model CareerRoadmapPhase {
+  id          String              @id @default(uuid())
+  roadmapId   String              @map("roadmap_id")
+  title       String
+  description String?
+  order       Int
+  status      String              @default("LOCKED") // LOCKED, ACTIVE, COMPLETED
+  progress    Float               @default(0)
+  roadmap     CareerRoadmap       @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  tasks       CareerRoadmapTask[]
+
+  @@map("career_roadmap_phases")
+}
+
+model CareerRoadmapTask {
+  id          String             @id @default(uuid())
+  phaseId     String             @map("phase_id")
+  title       String
+  description String?
+  status      String             @default("TODO") // TODO, IN_PROGRESS, COMPLETED, SKIPPED
+  priority    String             @default("MEDIUM")
+  dueDate     String?            @map("due_date")
+  phase       CareerRoadmapPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+
+  @@map("career_roadmap_tasks")
+}
+
+model DismissedRecommendation {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  recommendationId String   @map("recommendation_id")
+  dismissedAt      DateTime @default(now()) @map("dismissed_at")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recommendationId])
+  @@map("dismissed_recommendations")
+}
