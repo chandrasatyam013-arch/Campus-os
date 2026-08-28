@@ -1,4 +1,4 @@
-import { Subject, Mark, SubjectPerformanceAnalytics, SemesterRecord, RiskLevel, TrendDirection } from '../src/types';
+import { Subject, Mark, SubjectPerformanceAnalytics, SemesterRecord, RiskLevel, TrendDirection } from '../src/types/index.js';
 
 export class AcademicEngine {
   

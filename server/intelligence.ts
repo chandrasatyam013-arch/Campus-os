@@ -15,7 +15,7 @@ import {
   RiskLevel,
   TrendDirection,
   DayOfWeek
-} from '../src/types';
+} from '../src/types/index.js';
 
 export class IntelligenceEngine {
   // 1. ATTENDANCE INTELLIGENCE

@@ -1,5 +1,5 @@
 import { DismissedRecommendation } from '@prisma/client';
-import { Subject, Assignment, AcademicEvent, SubjectAttendanceIntelligence, SubjectPerformanceAnalytics, ActionRecommendation } from '../src/types';
+import { Subject, Assignment, AcademicEvent, SubjectAttendanceIntelligence, SubjectPerformanceAnalytics, ActionRecommendation } from '../src/types/index.js';
 
 export class RecommendationEngine {
   /**

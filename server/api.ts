@@ -6,12 +6,12 @@ import { CopilotRuntime, copilotRuntimeNodeHttpEndpoint } from '@copilotkit/runt
 import { BuiltInAgent } from '@copilotkit/runtime/v2';
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
-import { db } from './db';
-import { IntelligenceEngine } from './intelligence';
-import { CareerEngine } from './careerEngine';
-import { AcademicEngine } from './academicEngine';
-import { RecommendationEngine } from './recommendationEngine';
-import { User, DayOfWeek } from '../src/types';
+import { db } from './db.js';
+import { IntelligenceEngine } from './intelligence.js';
+import { CareerEngine } from './careerEngine.js';
+import { AcademicEngine } from './academicEngine.js';
+import { RecommendationEngine } from './recommendationEngine.js';
+import { User, DayOfWeek } from '../src/types/index.js';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

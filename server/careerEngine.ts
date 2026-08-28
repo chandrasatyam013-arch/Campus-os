@@ -1,4 +1,4 @@
-import { CareerProfile, CareerRecommendation, CareerRoadmap, CareerRoadmapPhase, CareerRoadmapTask, Subject, Mark } from '../src/types'; 
+import { CareerProfile, CareerRecommendation, CareerRoadmap, CareerRoadmapPhase, CareerRoadmapTask, Subject, Mark } from '../src/types/index.js'; 
 
 export interface CareerTemplate {
   id: string;

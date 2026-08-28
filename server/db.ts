@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from './db/prisma';
+import { prisma } from './db/prisma.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,7 +13,7 @@ import {
   AcademicEvent,
   UserSettings,
   AppNotification
-} from '../src/types';
+} from '../src/types/index.js';
 
 class DatabaseManager {
   constructor() {
