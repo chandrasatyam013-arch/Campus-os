@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Loader2, AlertCircle, User } from 'lucide-react';
 import { api } from '../lib/api';
-import toast from 'react-hot-toast';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -42,9 +41,7 @@ export const AIChatView: React.FC = () => {
       setMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
     } catch (err: any) {
       console.error('[CHAT ERROR]', err);
-      toast.error(err.message || 'Failed to send message');
-      // If error, remove the user message so they can try again? 
-      // Actually, better to leave it and let them read what they typed.
+      // If error, leave the user message and show error message
       setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message || 'Something went wrong.'}` }]);
     } finally {
       setIsLoading(false);
