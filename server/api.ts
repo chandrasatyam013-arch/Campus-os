@@ -213,7 +213,7 @@ router.get('/auth/google', authLimiter, (req, res) => {
     return res.status(500).send('Google OAuth is not configured.');
   }
 
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&state=${stateData.state}`;
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&state=${stateData.state}&prompt=select_account`;
   res.redirect(googleAuthUrl);
 });
 
