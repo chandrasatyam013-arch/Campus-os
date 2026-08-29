@@ -1302,8 +1302,6 @@ router.post('/career/target', authenticateUser, async (req: AuthenticatedRequest
 // 16. AI ASSISTANT (NATIVE)
 // ==========================================
 
-import { getDashboardData } from './api.js';
-
 router.post('/ai/chat', authenticateUser, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
