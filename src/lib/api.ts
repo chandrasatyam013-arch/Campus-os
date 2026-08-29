@@ -53,13 +53,24 @@ class ApiClient {
 
     if (!response.ok) {
       let errorMessage = 'An error occurred';
+      const contentType = response.headers.get('content-type');
       try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorData.message || errorMessage;
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } else {
+          // It's HTML or plain text, don't try to parse it as JSON
+          errorMessage = 'Server error. Please try again.';
+        }
       } catch (e) {
         errorMessage = response.statusText || errorMessage;
       }
       throw new Error(errorMessage);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('AI service is temporarily unavailable. Please try again.');
     }
 
     return response.json();

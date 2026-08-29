@@ -206,7 +206,7 @@ const MainAppContent: React.FC = () => {
         />
 
         {/* View Content Area */}
-        <main className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+7rem)] md:pb-8">
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-8">
           {renderCurrentView()}
         </main>
       </div>
@@ -215,7 +215,7 @@ const MainAppContent: React.FC = () => {
       <MobileNav
         currentRoute={currentRoute}
         onNavigate={setCurrentRoute}
-        onMoreClick={() => setShowMobileMoreMenu(true)}
+        onOpenMoreMenu={() => setShowMobileMoreMenu(true)}
       />
 
       {/* Mobile More Sheet / Drawer */}

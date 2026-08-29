@@ -30,4 +30,12 @@ app.use(cookieParser());
 
 app.use('/api', apiRouter);
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('API Error:', err);
+  res.status(err.status || 500).json({
+    error: 'Server Error',
+    message: err.message || 'An unexpected error occurred'
+  });
+});
+
 export default app;
