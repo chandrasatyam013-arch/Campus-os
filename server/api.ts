@@ -1334,7 +1334,7 @@ CRITICAL RULES:
     ];
 
     const result = await generateText({
-      model: groqProvider('llama3-8b-8192'),
+      model: groqProvider('llama-3.1-8b-instant'),
       messages,
       maxSteps: 5,
       tools: {
