@@ -1334,7 +1334,7 @@ CRITICAL RULES:
     ];
 
     const result = await generateText({
-      model: groqProvider('llama-3.1-8b-instant'),
+      model: groqProvider('openai/gpt-oss-20b'),
       messages,
       maxSteps: 5,
       tools: {
@@ -1409,7 +1409,7 @@ CRITICAL RULES:
     res.json({ message: result.text });
   } catch (err: any) {
     console.error('[AI ERROR]', err);
-    res.status(502).json({ error: 'AI service temporarily unavailable', debug: err.message });
+    res.status(502).json({ error: 'AI service temporarily unavailable' });
   }
 });
 
