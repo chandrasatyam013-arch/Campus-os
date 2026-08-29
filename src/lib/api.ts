@@ -41,7 +41,11 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-const response = await fetch(`https://campus-os-pi.vercel.app/api/${endpoint}`, {
+    // Ensure we don't have double slashes like /api//health which causes Vercel 308 redirects (breaking CORS preflight)
+    const baseUrl = 'https://campus-os-pi.vercel.app/api';
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    const response = await fetch(`${baseUrl}${cleanEndpoint}`, {
       ...options,
       headers,
       credentials: 'include' // Always send secure HTTP-only cookies
@@ -89,7 +93,30 @@ const response = await fetch(`https://campus-os-pi.vercel.app/api/${endpoint}`, 
     const res = await this.request<{ user: User; token?: string; isDemo: boolean }>('/auth/demo', {
       method: 'POST'
     });
-    if (res.token) this.setToken(res.token);
+    this.setToken(res.token || null);
+    return res;
+  }
+
+  public async forgotPassword(email: string) {
+    return await this.request<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  }
+
+  public async resetPassword(token: string, password: string) {
+    return await this.request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password })
+    });
+  }
+
+  public async exchangeTokenForCookie(token: string) {
+    const res = await this.request<{ message: string }>('/auth/session', {
+      method: 'POST',
+      body: JSON.stringify({ token })
+    });
+    this.setToken(token);
     return res;
   }
 

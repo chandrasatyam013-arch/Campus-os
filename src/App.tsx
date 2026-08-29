@@ -5,6 +5,8 @@ import { ToastProvider } from './context/ToastContext';
 import { LandingPage } from './views/LandingPage';
 import { LoginPage } from './views/LoginPage';
 import { RegisterPage } from './views/RegisterPage';
+import { ForgotPasswordPage } from './views/ForgotPasswordPage';
+import { ResetPasswordPage } from './views/ResetPasswordPage';
 import { Navbar } from './components/layout/Navbar';
 import { MobileHeader } from './components/layout/MobileHeader';
 import { Sidebar } from './components/layout/Sidebar';
@@ -24,10 +26,13 @@ import { AIChatView } from './views/AIChatView';
 import { CareerView } from './views/CareerView';
 
 import { X, BookOpen, Clock, Calendar, LineChart, Settings, Bot, Compass, GraduationCap, CheckSquare } from 'lucide-react';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 const MainAppContent: React.FC = () => {
-  const { user, loading } = useAuth();
-  const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
+  const { user, loading, exchangeTokenForCookie } = useAuth();
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'register' | 'forgot-password' | 'reset-password'>('landing');
   const [currentRoute, setCurrentRoute] = useState('dashboard');
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [showMobileMoreMenu, setShowMobileMoreMenu] = useState(false);
@@ -38,11 +43,44 @@ const MainAppContent: React.FC = () => {
     const handleOffline = () => setIsOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Capacitor App URL Open Listener (Deep Links)
+    let urlListener: any = null;
+    if (Capacitor.isNativePlatform()) {
+      urlListener = CapacitorApp.addListener('appUrlOpen', async (event) => {
+        const slug = event.url.split('campusos://').pop();
+        if (slug && slug.startsWith('auth?token=')) {
+          const token = slug.split('token=')[1];
+          if (token) {
+            try {
+              // Close the OAuth browser
+              await Browser.close();
+              // Exchange the token for a secure HTTP-only cookie
+              await exchangeTokenForCookie(token);
+            } catch (err) {
+              console.error('Failed to exchange token for cookie:', err);
+            }
+          }
+        }
+      });
+    }
+
+    // Check if we are on Web and have a reset token in the URL
+    if (!Capacitor.isNativePlatform()) {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (window.location.pathname === '/reset-password' || urlParams.has('token')) {
+        setAuthView('reset-password');
+      }
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      if (urlListener) {
+        urlListener.then((l: any) => l.remove());
+      }
     };
-  }, []);
+  }, [exchangeTokenForCookie]);
 
   if (loading) {
     return (
@@ -60,6 +98,7 @@ const MainAppContent: React.FC = () => {
         <LoginPage
           onNavigateToRegister={() => setAuthView('register')}
           onNavigateToLanding={() => setAuthView('landing')}
+          onNavigateToForgotPassword={() => setAuthView('forgot-password')}
         />
       );
     }
@@ -69,6 +108,22 @@ const MainAppContent: React.FC = () => {
           onNavigateToLogin={() => setAuthView('login')}
           onNavigateToLanding={() => setAuthView('landing')}
         />
+      );
+    }
+    if (authView === 'forgot-password') {
+      return (
+        <ForgotPasswordPage onNavigateToLogin={() => setAuthView('login')} />
+      );
+    }
+    if (authView === 'reset-password') {
+      return (
+        <ResetPasswordPage onNavigateToLogin={() => {
+          // Clear URL if on web to avoid re-triggering reset view
+          if (!Capacitor.isNativePlatform() && window.history.replaceState) {
+            window.history.replaceState({}, document.title, '/');
+          }
+          setAuthView('login');
+        }} />
       );
     }
     return (
@@ -151,7 +206,7 @@ const MainAppContent: React.FC = () => {
         />
 
         {/* View Content Area */}
-        <main className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-8">
+        <main className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+7rem)] md:pb-8">
           {renderCurrentView()}
         </main>
       </div>
@@ -160,7 +215,7 @@ const MainAppContent: React.FC = () => {
       <MobileNav
         currentRoute={currentRoute}
         onNavigate={setCurrentRoute}
-        onOpenMoreMenu={() => setShowMobileMoreMenu(true)}
+        onMoreClick={() => setShowMobileMoreMenu(true)}
       />
 
       {/* Mobile More Sheet / Drawer */}

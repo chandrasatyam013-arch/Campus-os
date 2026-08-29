@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { CopilotRuntime, copilotRuntimeNodeHttpEndpoint } from '@copilotkit/runtime';
@@ -197,8 +198,13 @@ router.post('/auth/demo', async (req, res) => {
 });
 
 router.get('/auth/google', authLimiter, (req, res) => {
-  const state = crypto.randomBytes(16).toString('hex');
-  res.cookie('oauth_state', state, { httpOnly: true, maxAge: 1000 * 60 * 10 }); // 10 minutes
+  const isAndroid = req.query.platform === 'android';
+  const stateData = {
+    state: crypto.randomBytes(16).toString('hex'),
+    isAndroid
+  };
+  const stateString = Buffer.from(JSON.stringify(stateData)).toString('base64');
+  res.cookie('oauth_state', stateString, { httpOnly: true, maxAge: 1000 * 60 * 10 }); // 10 minutes
   
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback';
@@ -214,10 +220,16 @@ router.get('/auth/google', authLimiter, (req, res) => {
 router.get('/auth/google/callback', async (req, res) => {
   try {
     const { code, state } = req.query;
-    const storedState = req.cookies.oauth_state;
+    const storedStateString = req.cookies.oauth_state;
     
-    if (!state || state !== storedState) {
+    if (!state || !storedStateString) {
       return res.status(400).send('Invalid state parameter. Authentication failed.');
+    }
+
+    const stateData = JSON.parse(Buffer.from(storedStateString, 'base64').toString());
+    
+    if (state !== stateData.state) {
+      return res.status(400).send('State mismatch. Authentication failed.');
     }
     
     res.clearCookie('oauth_state');
@@ -257,13 +269,17 @@ router.get('/auth/google/callback', async (req, res) => {
       // Create a dummy hash since Google users don't have passwords
       const dummyHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
       user = await db.createUser(name, email, dummyHash);
-      await db.seedUserWithRealisticData(user.id, false);
+      // Removed seedUserWithRealisticData to prevent Google users from seeing demo data
     }
 
     const token = signToken(user.id);
     setAuthCookie(res, token);
     
-    res.redirect('/');
+    if (stateData.isAndroid) {
+      res.redirect(`campusos://auth?token=${token}`);
+    } else {
+      res.redirect('/');
+    }
   } catch (err) {
     console.error('Google OAuth callback error:', err);
     res.status(500).send('Internal Server Error during Google Sign-In.');
@@ -278,6 +294,133 @@ router.post('/auth/logout', async (req, res) => {
   res.clearCookie('token', { path: '/' });
   res.json({ message: 'Logged out successfully' });
 });
+
+router.post('/auth/session', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token is required' });
+    
+    // Verify token
+    jwt.verify(token, JWT_SECRET);
+    setAuthCookie(res, token);
+    res.json({ message: 'Session created' });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+router.post('/auth/forgot-password', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await db.getUserByEmail(email);
+    // Generic response to prevent enumeration
+    const successMsg = 'If an account exists for this email, a password reset link has been sent.';
+
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = bcrypt.hashSync(resetToken, 10);
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
+
+      await prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt
+        }
+      });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+      if (process.env.EMAIL_HOST && process.env.EMAIL_USER) {
+        try {
+          const transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: parseInt(process.env.EMAIL_PORT || '587'),
+            secure: process.env.EMAIL_PORT === '465',
+            auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASSWORD
+            }
+          });
+
+          await transporter.sendMail({
+            from: process.env.EMAIL_FROM || '"Campus OS" <noreply@campusos.internal>',
+            to: user.email,
+            subject: 'Campus OS - Password Reset',
+            html: `<p>You requested a password reset for your Campus OS account.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a><p>If you didn't request this, you can safely ignore this email. It expires in 1 hour.</p>`
+          });
+        } catch (emailErr) {
+          console.error(`[EMAIL ERROR] Failed to send reset email to ${user.email}:`, emailErr);
+          // Fallback to console during dev/failure if desired, but we still return success to frontend
+          console.log(`[DEV FALLBACK] Password reset link for ${user.email}: ${resetLink}`);
+        }
+      } else {
+        console.log(`[DEV ONLY] Password reset link for ${user.email}: ${resetLink}`);
+      }
+    }
+
+    res.json({ message: successMsg });
+  } catch (err: any) {
+    console.error('[FORGOT PASSWORD ERROR]', err);
+    res.status(500).json({ error: 'Failed to process forgot password request.' });
+  }
+});
+
+router.post('/auth/reset-password', authLimiter, async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
+
+    // Find valid token
+    const tokens = await prisma.passwordResetToken.findMany({
+      where: { usedAt: null, expiresAt: { gt: new Date() } }
+    });
+
+    let matchedToken = null;
+    for (const t of tokens) {
+      if (bcrypt.compareSync(token, t.tokenHash)) {
+        matchedToken = t;
+        break;
+      }
+    }
+
+    if (!matchedToken) {
+      return res.status(400).json({ error: 'Invalid or expired reset token.' });
+    }
+
+    const passwordHash = bcrypt.hashSync(password, 10);
+    
+    // Update password via direct Prisma query since DB abstraction might not have updatePassword
+    await prisma.user.update({
+      where: { id: matchedToken.userId },
+      data: { passwordHash }
+    });
+
+    await prisma.passwordResetToken.update({
+      where: { id: matchedToken.id },
+      data: { usedAt: new Date() }
+    });
+
+    // Option: Invalidate existing sessions here if supported
+    // Since sessions are JWTs, invalidation requires a token blacklist or updating a user timestamp.
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to reset password.' });
+  }
+});
+
 
 
 // ==========================================

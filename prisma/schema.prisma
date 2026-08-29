@@ -8,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id            String             @id @default(uuid())
-  name          String
-  email         String             @unique
-  passwordHash  String             @map("password_hash")
-  createdAt     DateTime           @default(now()) @map("created_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
-  events        AcademicEvent[]
-  notifications AppNotification[]
-  assignments   Assignment[]
-  attendance    AttendanceRecord[]
-  marks         Mark[]
-  subjects      Subject[]
-  timetable     TimetableEntry[]
-  settings      UserSettings?
-  careerProfile           CareerProfile?
-  roadmaps                CareerRoadmap[]
+  id                       String                    @id @default(uuid())
+  name                     String
+  email                    String                    @unique
+  passwordHash             String                    @map("password_hash")
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  events                   AcademicEvent[]
+  notifications            AppNotification[]
+  assignments              Assignment[]
+  attendance               AttendanceRecord[]
+  marks                    Mark[]
+  subjects                 Subject[]
+  timetable                TimetableEntry[]
+  settings                 UserSettings?
+  careerProfile            CareerProfile?
+  roadmaps                 CareerRoadmap[]
   dismissedRecommendations DismissedRecommendation[]
+  resetTokens             PasswordResetToken[]
 
   @@map("users")
 }
@@ -244,4 +245,17 @@ model DismissedRecommendation {
 
   @@unique([userId, recommendationId])
   @@map("dismissed_recommendations")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
 }

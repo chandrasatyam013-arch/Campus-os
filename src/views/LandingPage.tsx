@@ -31,9 +31,9 @@ import { useToast } from '../context/ToastContext'; interface LandingPageProps {
     }
   };
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 flex flex-col selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#FAFAFA] text-gray-900 flex flex-col selection:bg-black selection:text-white pb-safe">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-40 bg-white backdrop-blur-md border-b border-gray-100 px-6 sm:px-10 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 sm:px-10 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center shadow-sm overflow-hidden">
             <img src="/logo.jpg" alt="Campus OS Logo" className="w-full h-full object-cover" />

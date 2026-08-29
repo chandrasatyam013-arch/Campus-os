@@ -4,10 +4,16 @@ import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 
+import { Capacitor } from '@capacitor/core';
+
 export const AIChatView: React.FC = () => {
+  const runtimeUrl = Capacitor.isNativePlatform() 
+    ? 'https://campus-os-pi.vercel.app/api/copilotkit' 
+    : '/api/copilotkit';
+
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto w-full flex flex-col h-full min-h-[80vh]">
-      <div className="flex items-center gap-3 mb-8">
+    <div className="p-6 md:p-8 max-w-5xl mx-auto w-full flex flex-col h-full min-h-[80vh] md:pb-8 pb-32">
+      <div className="flex items-center gap-3 mb-8 pt-safe">
         <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shadow-sm">
           <Bot className="w-5 h-5" />
         </div>
@@ -17,8 +23,8 @@ export const AIChatView: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 bg-white border border-gray-100 rounded-[32px] overflow-hidden flex flex-col shadow-sm" style={{ minHeight: 'calc(100dvh - 200px)' }}>
-        <CopilotKit runtimeUrl="/api/copilotkit">
+      <div className="flex-1 bg-white border border-gray-100 rounded-[32px] overflow-hidden flex flex-col shadow-sm">
+        <CopilotKit runtimeUrl={runtimeUrl}>
           <CopilotChat
             instructions={`You are the user's personal Campus OS academic assistant/copilot. 
 Your primary goal is to use the available secure backend tools to answer personal academic questions (e.g. attendance, SGPA, grades, subjects, assignments).

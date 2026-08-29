@@ -12,6 +12,9 @@ interface AuthContextType {
   startDemo: () => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
+  exchangeTokenForCookie: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,6 +86,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await fetchCurrentUser();
   };
 
+  const forgotPassword = async (email: string) => {
+    await api.forgotPassword(email);
+  };
+
+  const resetPassword = async (token: string, password: string) => {
+    await api.resetPassword(token, password);
+  };
+
+  const exchangeTokenForCookie = async (token: string) => {
+    await api.exchangeTokenForCookie(token);
+    await fetchCurrentUser();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -94,7 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         startDemo,
         logout,
-        refreshUser
+        refreshUser,
+        forgotPassword,
+        resetPassword,
+        exchangeTokenForCookie
       }}
     >
       {children}
