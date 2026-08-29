@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './db/prisma.js';
 import fs from 'fs';
 import path from 'path';
+import { seedRealisticDemoData } from './seeder.js';
 
 import {
   User,
@@ -463,11 +464,14 @@ class DatabaseManager {
   public async seedUserWithRealisticData(userId: string, overwrite = false) {
     if (overwrite) {
       await prisma.userSettings.deleteMany({ where: { userId } });
+      await prisma.academicEvent.deleteMany({ where: { userId } });
+      await prisma.timetableEntry.deleteMany({ where: { userId } });
+      await prisma.assignment.deleteMany({ where: { userId } });
+      await prisma.mark.deleteMany({ where: { userId } });
+      await prisma.attendanceRecord.deleteMany({ where: { userId } });
       await prisma.subject.deleteMany({ where: { userId } });
-      // Relations Cascade
     }
     
-    // We can port over the exact seeder, or for now just create Settings
     const existing = await prisma.userSettings.findUnique({ where: { userId } });
     if (!existing) {
       await prisma.userSettings.create({
@@ -486,6 +490,9 @@ class DatabaseManager {
         }
       });
     }
+
+    // Generate all the realistic demo data
+    await seedRealisticDemoData(userId);
   }
 
 

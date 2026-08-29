@@ -177,8 +177,10 @@ router.post('/auth/demo', async (req, res) => {
     if (!demoUser) {
       const hash = bcrypt.hashSync('demo1234', 10);
       demoUser = await db.createUser('Alex Rivera', demoEmail, hash);
-      await db.seedUserWithRealisticData(demoUser.id, true);
     }
+    
+    // Always reseed the data for demo logins to ensure a fresh state
+    await db.seedUserWithRealisticData(demoUser.id, true);
 
     const token = signToken(demoUser.id);
     setAuthCookie(res, token);
