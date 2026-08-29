@@ -113,6 +113,12 @@ import { CreateAssignmentModal } from '../components/assignments/CreateAssignmen
         </div>
       </div>
 
+      {/* Today's Classes */}
+      <TodayClassesWidget dayOfWeek={todaySchedule.dayOfWeek} dateFormatted={todaySchedule.dateFormatted} classes={todaySchedule.classes} onNavigate={onNavigate} />
+
+      {/* Signature Feature: What should I do today? */}
+      <WhatShouldIDoToday items={whatShouldIDoToday} onNavigate={onNavigate} />
+
       {/* KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard title="Overall Attendance" value={overallAttendance.overallPercentage === null ? 'No Data' : `${overallAttendance.overallPercentage}%`} subtitle={`${overallAttendance.totalAttended}/${overallAttendance.totalHeld} classes attended`} icon={CalendarCheck2} color={overallAttendance.isAboveTarget ? 'indigo' : overallAttendance.isAboveMinimum ? 'amber' : 'rose'} badge={{ text: overallAttendance.isAboveTarget ? 'Safe' : overallAttendance.isAboveMinimum ? 'Watch' : 'Risk', type: overallAttendance.isAboveTarget ? 'safe' : overallAttendance.isAboveMinimum ? 'warning' : 'danger'
@@ -131,21 +137,11 @@ import { CreateAssignmentModal } from '../components/assignments/CreateAssignmen
         />
       </div>
 
-      {/* Signature Feature: What should I do today? */}
-      <WhatShouldIDoToday items={whatShouldIDoToday} onNavigate={onNavigate}
-      />
-
-      {/* Grid: Timetable & Weekly Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TodayClassesWidget dayOfWeek={todaySchedule.dayOfWeek} dateFormatted={todaySchedule.dateFormatted} classes={todaySchedule.classes} onNavigate={onNavigate}
-        />
-
-        <WeeklySummaryCard summary={weeklySummary} onNavigate={onNavigate}
-        />
-      </div>
+      {/* Weekly Summary */}
+      <WeeklySummaryCard summary={weeklySummary} onNavigate={onNavigate} />
 
       {/* Attendance Watchlist & Quick Simulators */}
-      <div className="p-7 sm:p-8 rounded-[32px] bg-white border border-gray-100 shadow-sm space-y-5 overflow-hidden">
+      <div className="p-6 sm:p-7 rounded-[28px] mobile-glass-card space-y-5 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mb-1">Buffer Analytics</p>

@@ -151,7 +151,7 @@ const MainAppContent: React.FC = () => {
         />
 
         {/* View Content Area */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-8">
+        <main className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-8">
           {renderCurrentView()}
         </main>
       </div>

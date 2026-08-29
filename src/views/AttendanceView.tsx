@@ -72,7 +72,7 @@ import { LogAttendanceModal } from '../components/attendance/LogAttendanceModal'
         {intelList.map(intel => { const isSafe = intel.riskLevel === 'SAFE';
   const isWatch = intel.riskLevel === 'WATCH';
   return (
-            <div key={intel.subjectId} className="p-7 rounded-[32px] bg-white border border-gray-100 shadow-sm flex flex-col justify-between space-y-5"
+            <div key={intel.subjectId} className="p-6 sm:p-7 rounded-[28px] mobile-glass-card flex flex-col justify-between space-y-5"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -168,7 +168,7 @@ import { LogAttendanceModal } from '../components/attendance/LogAttendanceModal'
       </div>
 
       {/* Recorded Attendance History */}
-      <div className="p-7 sm:p-8 rounded-[32px] bg-white border border-gray-100 shadow-sm space-y-5">
+      <div className="p-6 sm:p-7 rounded-[28px] mobile-glass-card space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mb-1">Session Archives</p>

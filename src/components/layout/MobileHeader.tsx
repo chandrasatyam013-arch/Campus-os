@@ -32,7 +32,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ currentRoute, onNavi
   };
 
   return (
-    <header className="md:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between">
+    <header className="md:hidden sticky top-0 z-30 mobile-glass-header px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 flex items-center justify-between transition-colors">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
           <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />

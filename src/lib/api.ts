@@ -41,7 +41,7 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(`/api${endpoint}`, {
+const response = await fetch(`https://campus-os-pi.vercel.app/api/${endpoint}`, {
       ...options,
       headers,
       credentials: 'include' // Always send secure HTTP-only cookies

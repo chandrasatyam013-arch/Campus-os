@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Calendar } from 
 import { WeeklyAcademicSummary } from '../../types'; interface WeeklySummaryCardProps { summary: WeeklyAcademicSummary; onNavigate: (route: string) => void;
 } export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({ summary, onNavigate }) => { const isUp = summary.attendanceDirection === 'UP';
   return (
-    <div className="p-7 sm:p-8 rounded-[32px] bg-white border border-gray-100 shadow-sm">
+    <div className="p-6 sm:p-7 rounded-[28px] mobile-glass-card flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold mb-1">Weekly Velocity</p>

@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
@@ -20,6 +21,17 @@ if (process.env.GEMINI_API_KEY) {
 
 export const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+app.use(cors({
+  origin: [
+    'https://campus-os-pi.vercel.app',
+    'https://localhost',
+    'http://localhost',
+    'capacitor://localhost'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Basic Middlewares
 app.use(helmet({
