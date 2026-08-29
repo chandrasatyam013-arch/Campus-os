@@ -29,8 +29,8 @@ import { api } from '../../lib/api'; interface NavbarProps { currentRoute: strin
       <div className="flex items-center gap-4">
         <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-3 group text-left focus:outline-none"
         >
-          <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-            <div className="w-3.5 h-3.5 bg-white rotate-45 rounded-[2px]" />
+          <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+            <img src="/logo.jpg" alt="Campus OS Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-2">

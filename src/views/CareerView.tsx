@@ -300,8 +300,8 @@ export const CareerView: React.FC = () => {
   if (!profile && !selectingTarget) {
     return (
       <div className="p-6 md:p-8 max-w-5xl mx-auto w-full flex flex-col items-center justify-center min-h-[70vh] text-center">
-        <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-          <Compass className="w-10 h-10 text-indigo-500" />
+        <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6 overflow-hidden">
+          <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">Discover your best-fit career</h1>
         <p className="text-gray-500 max-w-lg mb-8">Tell Campus OS about your interests, strengths, and goals. We'll analyze your profile and generate a personalized roadmap to help you succeed.</p>
@@ -414,7 +414,7 @@ export const CareerView: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-black text-white rounded-[32px] p-6 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10">
-              <Compass className="w-24 h-24" />
+              <img src="/logo.jpg" alt="Logo" className="w-24 h-24 object-cover rounded-full" />
             </div>
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Target Career</h3>
             <h2 className="text-2xl font-black tracking-tight mb-6">{roadmap?.targetCareer}</h2>

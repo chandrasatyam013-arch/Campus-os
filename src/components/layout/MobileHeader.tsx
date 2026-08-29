@@ -34,8 +34,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ currentRoute, onNavi
   return (
     <header className="md:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm">
-          <div className="w-2.5 h-2.5 bg-white rotate-45 rounded-[2px]" />
+        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
+          <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col">
           <span className="font-bold text-sm tracking-tight text-black">{getPageTitle(currentRoute)}</span>

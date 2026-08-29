@@ -35,8 +35,8 @@ import { useToast } from '../context/ToastContext'; interface LandingPageProps {
       {/* Top Navigation */}
       <header className="sticky top-0 z-40 bg-white backdrop-blur-md border-b border-gray-100 px-6 sm:px-10 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center shadow-sm">
-            <Compass className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center shadow-sm overflow-hidden">
+            <img src="/logo.jpg" alt="Campus OS Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <span className="font-bold text-lg text-black tracking-tight">CAMPUS OS</span>
@@ -219,7 +219,9 @@ import { useToast } from '../context/ToastContext'; interface LandingPageProps {
             {/* Campus OS */}
             <div className="p-7 sm:p-8 rounded-[28px] bg-white border border-gray-200 space-y-4 shadow-sm">
               <div className="flex items-center gap-2 text-black text-sm font-bold">
-                <Compass className="w-4 h-4" />
+                <div className="w-4 h-4 rounded-full overflow-hidden bg-black flex items-center justify-center">
+                  <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+                </div>
                 <span>Campus OS Intelligence</span>
               </div>
               <ul className="space-y-3 text-xs text-gray-700 ">
@@ -314,7 +316,9 @@ import { useToast } from '../context/ToastContext'; interface LandingPageProps {
       <footer className="mt-auto border-t border-gray-100 px-6 py-8 text-center text-xs text-gray-500 ">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Compass className="w-4 h-4 text-black " />
+            <div className="w-4 h-4 rounded-full overflow-hidden bg-black flex items-center justify-center">
+              <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+            </div>
             <span className="font-bold text-gray-900 ">CAMPUS OS</span>
             <span>— "Your academic data. Your next move."</span>
           </div>
