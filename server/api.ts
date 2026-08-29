@@ -6,7 +6,8 @@ import crypto from 'crypto';
 import { CopilotRuntime, copilotRuntimeNodeHttpEndpoint } from '@copilotkit/runtime';
 import { BuiltInAgent } from '@copilotkit/runtime/v2';
 import { createGroq } from '@ai-sdk/groq';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
+import { z } from 'zod';
 import { db } from './db.js';
 import { IntelligenceEngine } from './intelligence.js';
 import { CareerEngine } from './careerEngine.js';
@@ -1298,32 +1299,58 @@ router.post('/career/target', authenticateUser, async (req: AuthenticatedRequest
 });
 
 // ==========================================
-// 16. COPILOTKIT BACKEND
+// 16. AI ASSISTANT (NATIVE)
 // ==========================================
-router.all('/copilotkit', authenticateUser, async (req: AuthenticatedRequest, res, next) => {
+
+import { getDashboardData } from './api.js';
+
+router.post('/ai/chat', authenticateUser, async (req: AuthenticatedRequest, res, next) => {
   try {
     const userId = req.user!.id;
-    req.url = req.originalUrl;
+    const { message, history = [] } = req.body;
     
-    const runtime = new CopilotRuntime({
-      agents: {
-        default: new BuiltInAgent({ 
-          model: groqProvider('openai/gpt-oss-20b')
-        })
-      },
-      actions: [
-        {
-          name: 'getMyAcademicProfile',
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'missing_key') {
+      return res.status(503).json({ error: 'AI service is not configured' });
+    }
+
+    const systemPrompt = `You are the user's personal Campus OS academic assistant/copilot. 
+Your primary goal is to use the available secure backend tools to answer personal academic questions (e.g. attendance, SGPA, grades, subjects, assignments).
+CRITICAL RULES:
+1. ALWAYS use the provided tools to retrieve data FIRST before answering. 
+2. NEVER ask the user to manually provide their subjects, attendance, marks, assignments, timetable, user ID, or account ID. The tools will securely fetch this using their session automatically.
+3. Use the 'getMyAcademicProfile' tool to fetch the user's canonical academic data, which perfectly matches the dashboard.
+4. If the user asks about their career, what career suits them, or their roadmap progress, ALWAYS call the 'getMyCareerRoadmap' tool first.
+5. If the user asks "What should I focus on today?", "What are my priorities?", or "What should I do?", ALWAYS call the 'getMyRecommendations' tool to fetch the deterministic priority list.
+6. If a tool returns no data or insufficient data for a question, respond honestly. Do NOT invent or estimate data.
+7. Do NOT over-promise or make up numbers. Use only the PostgreSQL data returned by the tools.
+8. Always identify yourself as the Campus OS academic assistant/copilot, not a generic AI.`;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: message }
+    ];
+
+    const result = await generateText({
+      model: groqProvider('llama3-8b-8192'),
+      messages,
+      maxSteps: 5,
+      tools: {
+        getMyAcademicProfile: tool({
           description: "Gets the comprehensive, canonical academic profile for the current authenticated student. Includes attendance (overall and per-subject), performance (SGPA and per-subject), pending assignments, today's schedule, and academic risk analysis. Takes NO parameters.",
-          parameters: [],
-          handler: async () => {
+          parameters: z.object({}),
+          execute: async () => {
             return await getDashboardData(userId);
           }
-        },
-        {
-          name: "getMyCareerRoadmap",
+        }),
+        getMyCareerRoadmap: tool({
           description: "Retrieve the student's career profile and active roadmap",
-          handler: async () => {
+          parameters: z.object({}),
+          execute: async () => {
             const profile = await prisma.careerProfile.findUnique({
               where: { userId },
               include: { recommendations: true }
@@ -1334,11 +1361,11 @@ router.all('/copilotkit', authenticateUser, async (req: AuthenticatedRequest, re
             });
             return { profile, roadmaps };
           }
-        },
-        {
-          name: "getMyAcademicSummary",
+        }),
+        getMyAcademicSummary: tool({
           description: "Retrieve the student's deterministic academic performance (SGPA, CGPA, trends, semesters)",
-          handler: async () => {
+          parameters: z.object({}),
+          execute: async () => {
             const data = await getDashboardData(userId);
             return {
               estimatedSGPA: data.academicPerformance.estimatedSGPA,
@@ -1351,15 +1378,14 @@ router.all('/copilotkit', authenticateUser, async (req: AuthenticatedRequest, re
               semesters: data.academicPerformance.semesters
             };
           }
-        },
-        {
-          name: "getMyTargetSGPA",
+        }),
+        getMyTargetSGPA: tool({
           description: "Calculate what SGPA/CGPA the student needs in remaining credits to hit a target. Provide targetCGPA and remainingCredits as parameters.",
-          parameters: [
-            { name: "targetCGPA", type: "number", description: "The CGPA the user wants to achieve" },
-            { name: "remainingCredits", type: "number", description: "The number of credits left in their degree/semester" }
-          ],
-          handler: async ({ targetCGPA, remainingCredits }: { targetCGPA: number, remainingCredits: number }) => {
+          parameters: z.object({
+            targetCGPA: z.number().describe("The CGPA the user wants to achieve"),
+            remainingCredits: z.number().describe("The number of credits left in their degree/semester")
+          }),
+          execute: async ({ targetCGPA, remainingCredits }) => {
             const data = await getDashboardData(userId);
             const settings = await db.getSettings(userId);
             return AcademicEngine.calculateTarget(
@@ -1370,26 +1396,22 @@ router.all('/copilotkit', authenticateUser, async (req: AuthenticatedRequest, re
               settings.gradingSystem
             );
           }
-        },
-        {
-          name: "getMyRecommendations",
+        }),
+        getMyRecommendations: tool({
           description: "Retrieve the student's deterministic, prioritized smart recommendations (what should I do today/focus on). This engine merges attendance, assignment, academic, and career risks. Takes NO parameters.",
-          parameters: [],
-          handler: async () => {
+          parameters: z.object({}),
+          execute: async () => {
             const data = await getDashboardData(userId);
             return data.recommendations;
           }
-        }
-      ]
+        })
+      }
     });
 
-    const handler = copilotRuntimeNodeHttpEndpoint({
-      endpoint: '/api/copilotkit',
-      runtime
-    });
-    return handler(req, res);
-  } catch (err) {
-    next(err);
+    res.json({ message: result.text });
+  } catch (err: any) {
+    console.error('[AI ERROR]', err);
+    res.status(502).json({ error: 'AI service temporarily unavailable' });
   }
 });
 

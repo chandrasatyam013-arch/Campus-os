@@ -356,6 +356,14 @@ class ApiClient {
     this.setToken(null);
     return res;
   }
+
+  // AI Assistant
+  public async sendAIMessage(message: string, history: any[] = []) {
+    return await this.request<{ message: string }>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, history })
+    });
+  }
 }
 
 export const api = new ApiClient();
