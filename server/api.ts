@@ -1409,19 +1409,17 @@ CRITICAL RULES:
     let finalMessage = result.text;
     
     // Fallback for Groq models that fail to automatically loop with maxSteps
-    if (!finalMessage && result.steps && result.steps.length > 0) {
-      const toolResults = result.steps.flatMap(s => s.toolResults || []);
-      if (toolResults.length > 0) {
-        const summaryResult = await generateText({
-          model: groqProvider('openai/gpt-oss-20b'),
-          messages: [
-            ...messages,
-            { role: 'assistant', content: 'I have retrieved the necessary data from the system.' },
-            { role: 'user', content: `Here is the requested data: ${JSON.stringify(toolResults.map(t => t.result))}. Please answer my original query naturally and concisely based on this data.` }
-          ]
-        });
-        finalMessage = summaryResult.text;
-      }
+    if (!finalMessage && result.toolResults && result.toolResults.length > 0) {
+      const toolResults = result.toolResults;
+      const summaryResult = await generateText({
+        model: groqProvider('openai/gpt-oss-20b'),
+        messages: [
+          ...messages,
+          { role: 'assistant', content: 'I have retrieved the necessary data from the system.' },
+          { role: 'user', content: `Here is the requested data: ${JSON.stringify(toolResults.map(t => t.result))}. Please answer my original query naturally and concisely based on this data.` }
+        ]
+      });
+      finalMessage = summaryResult.text;
     }
 
     res.json({ message: finalMessage });
