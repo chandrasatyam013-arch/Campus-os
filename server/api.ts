@@ -339,9 +339,14 @@ router.post('/auth/session', async (req, res) => {
 
 router.post('/auth/forgot-password', authLimiter, async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER) {
+      console.error('[FORGOT PASSWORD ERROR] Server email configuration is missing.');
+      return res.status(500).json({ error: 'Server email configuration is missing.' });
     }
 
     const user = await db.getUserByEmail(email);
@@ -364,31 +369,26 @@ router.post('/auth/forgot-password', authLimiter, async (req, res) => {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
-      if (process.env.EMAIL_HOST && process.env.EMAIL_USER) {
-        try {
-          const transporter = nodemailer.createTransport({
-            host: process.env.EMAIL_HOST,
-            port: parseInt(process.env.EMAIL_PORT || '587'),
-            secure: process.env.EMAIL_PORT === '465',
-            auth: {
-              user: process.env.EMAIL_USER,
-              pass: process.env.EMAIL_PASSWORD
-            }
-          });
+      try {
+        const transporter = nodemailer.createTransport({
+          host: process.env.EMAIL_HOST,
+          port: parseInt(process.env.EMAIL_PORT || '587'),
+          secure: process.env.EMAIL_PORT === '465',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+          }
+        });
 
-          await transporter.sendMail({
-            from: process.env.EMAIL_FROM || '"Campus OS" <noreply@campusos.internal>',
-            to: user.email,
-            subject: 'Campus OS - Password Reset',
-            html: `<p>You requested a password reset for your Campus OS account.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a><p>If you didn't request this, you can safely ignore this email. It expires in 1 hour.</p>`
-          });
-        } catch (emailErr) {
-          console.error(`[EMAIL ERROR] Failed to send reset email to ${user.email}:`, emailErr);
-          // Fallback to console during dev/failure if desired, but we still return success to frontend
-          console.log(`[DEV FALLBACK] Password reset link for ${user.email}: ${resetLink}`);
-        }
-      } else {
-        console.log(`[DEV ONLY] Password reset link for ${user.email}: ${resetLink}`);
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM || '"Campus OS" <noreply@campusos.internal>',
+          to: user.email,
+          subject: 'Campus OS - Password Reset',
+          html: `<p>You requested a password reset for your Campus OS account.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a><p>If you didn't request this, you can safely ignore this email. It expires in 1 hour.</p>`
+        });
+      } catch (emailErr) {
+        console.error(`[EMAIL ERROR] Failed to send reset email to ${user.email}:`, emailErr);
+        return res.status(500).json({ error: 'Failed to send password reset email. Please try again later.' });
       }
     }
 
