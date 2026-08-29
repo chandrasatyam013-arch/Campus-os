@@ -213,7 +213,7 @@ router.get('/auth/google', authLimiter, (req, res) => {
     return res.status(500).send('Google OAuth is not configured.');
   }
 
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&state=${state}`;
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=email%20profile&state=${stateData.state}`;
   res.redirect(googleAuthUrl);
 });
 
@@ -276,7 +276,35 @@ router.get('/auth/google/callback', async (req, res) => {
     setAuthCookie(res, token);
     
     if (stateData.isAndroid) {
-      res.redirect(`campusos://auth?token=${token}`);
+      // Use an HTML-based JS redirect to bypass Chrome Custom Tabs 302 restrictions on custom schemes
+      const deepLink = `campusos://auth?token=${token}`;
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Authenticating...</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #FAFAFA; color: #333; }
+            .spinner { border: 3px solid rgba(0,0,0,0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #000; animation: spin 1s linear infinite; margin-bottom: 16px; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            .btn { margin-top: 24px; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 99px; font-weight: 600; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="spinner"></div>
+          <h2>Returning to Campus OS...</h2>
+          <p>You have successfully authenticated.</p>
+          <script>
+            setTimeout(function() {
+              window.location.href = "${deepLink}";
+            }, 100);
+          </script>
+          <a href="${deepLink}" class="btn">Click here if nothing happens</a>
+        </body>
+        </html>
+      `);
     } else {
       res.redirect('/');
     }
