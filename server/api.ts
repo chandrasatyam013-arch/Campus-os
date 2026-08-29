@@ -1409,7 +1409,7 @@ CRITICAL RULES:
     res.json({ message: result.text });
   } catch (err: any) {
     console.error('[AI ERROR]', err);
-    res.status(502).json({ error: 'AI service temporarily unavailable' });
+    res.status(502).json({ error: 'AI service temporarily unavailable', debug: err.message });
   }
 });
 
